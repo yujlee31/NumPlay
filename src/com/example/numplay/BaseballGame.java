@@ -153,29 +153,10 @@ public class BaseballGame {
     }
 
     public static void main(String[] args) { //test~~
-
-        //test area~~
-        // System.out.println("실행?");
-//        String gNum = "";
-//        for (int g : gNums) {
-//            gNum += Integer.toString(g);
-//        }
-//        System.out.println("정답:"+gNum);
-        ////////
-
-        //System.out.println(sout);
         while (flagForNewGame == true) {
             BaseballGame ex = new BaseballGame();
             ex.play();
             gNums.clear();
         }
-    }
-
-    public void init() {
-        gNums.clear();
-        gNum = "";
-        //flagForNext = false;
-        //flagForNewGame = true;
-        inputNum = "";
     }
 }
