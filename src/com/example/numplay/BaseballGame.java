@@ -1,14 +1,11 @@
 package com.example.numplay;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class BaseballGame {
     static LinkedHashSet<Integer> gNums = new LinkedHashSet<>();   // 숫자야구 문제
     String gNum = "";
-    boolean flag = false;
+    static boolean flagForNewGame = true;
     static String inputNum;
     static ArrayList<Integer> tryCnt = new ArrayList<>();  // 전체 회차별 게임 진행횟수
 
@@ -17,7 +14,7 @@ public class BaseballGame {
         Random rand = new Random();
         do {
             int iVal = rand.nextInt(9)+1; // 1~9 범위 지정
-            //System.out.println(iVal);
+
             if (gNums.contains(iVal)) {
                 gNums.remove(iVal);
             } else {
@@ -25,17 +22,14 @@ public class BaseballGame {
             }
         } while (gNums.size() < 3);
 
-//        for (int i=1; i<gNums.size(); i++) {
-//            gNum += gNums[i];
-//        }
         for (int g : gNums) {
             gNum += g;
         }
-        System.out.println("gNums:" + gNums.toString());
-        System.out.println("gNum:" + gNum);
+        ///System.out.println("정답:" + gNum);
     }
 
     public int play() {
+
         int thisTryCnt = 0;
         Scanner sc = new Scanner(System.in);
         while (true) {
@@ -45,65 +39,88 @@ public class BaseballGame {
             int bCnt = 0; //볼 카운트
             int sCnt = 0; //스트라이크 카운트
             int nextStep = sc.nextInt();
-
             if (nextStep == 1) { // 게임시작 입력 시 -> 게임 진행
-                while (true)
-                {
-                    System.out.println(">> 3가지 숫자를 입력하세요."); //포기하고 돌아가기?
+                while (true) {
+                    System.out.println(">> 세 개의 숫자를 입력하세요.");
                     inputNum = sc.next();
                     thisTryCnt++; //시도횟수 +1번
-                    validateInput(inputNum);
-                    //정답판별//
-//                    System.out.println(flag);
-//                    System.out.println(gNum);
-//                    System.out.println(inputNum);
-                    if (flag == true) {
-                        System.out.println(">> @#$%@#$%@#$%@#정답입니다#$%&^#$%@#$%#$");
-                        tryCnt.add(thisTryCnt);
-                        break;
-                    } else {
-                        sCnt = countStrike(inputNum);
-                        bCnt = countBall(inputNum);
-                        if (sCnt == 0 && bCnt ==0) {
-                            System.out.println(">> 아웃, 다시!");
+                    boolean flag = validateInput(inputNum);
+                    if (flag == true) { //사용자 입력값에 문제가 없을 때
+                        if (gNum.equals(inputNum)) {
+                            System.out.println(">> :+::+::+::+::+:정답입니다:+::+::+::+::+:");
+                            System.out.println();
+                            flagForNewGame = true;
+                            tryCnt.add(thisTryCnt);
+                            break;
                         } else {
-                            System.out.println(">> " + sCnt + "스트라이크 " + bCnt + "볼, 다시!");
+                            sCnt = countStrike(inputNum);
+                            bCnt = countBall(inputNum);
+                            if (sCnt == 0 && bCnt ==0) {
+                                System.out.println(">> 아웃, 다시!");
+                                continue;
+                            } else {
+                                System.out.println(">> " + sCnt + "스트라이크 " + bCnt + "볼, 다시!");
+                                continue;
+                            }
                         }
-                        tryCnt.add(thisTryCnt);
-                        continue;
                     }
-                }
+                } //end of while (Playing)
             } else if (nextStep == 2) { // 기록보기 입력 시
                 displayGame();
+                flagForNewGame = true;
                 break;
             } else if (nextStep == 3) { // 종료 입력 시
-                System.out.println(">> 숫자야구 게임을 종료합니다. 이전 기록이 초기화됩니다.");
-                tryCnt.clear();
+                System.out.println(">> 숫자야구 게임을 종료합니다. . .");
+                flagForNewGame = false;
+                tryCnt.clear(); //이전 기록 모두 지우기
                 break;
-            } else {                        // 1~3 외의 값을 입력 시
+            } else { // 1~3 외의 값을 입력 시
                 System.out.println(">> 올바른 숫자(1,2,3)를 입력해주세요! 처음으로 돌아갑니다.");
                 continue;
             }
-            // 2. 올바른 입력값을 받았는지 검증
-            // 3. 게임 진행횟수 증가
-            // 4. 스트라이크 개수 계산
-            // 5. 정답여부 확인, 만약 정답이면 break 를 이용해 반복문 탈출
-            // 6. 볼 개수 계산
-            // 7. 힌트 출력
-            // 게임 진행횟수 반환
             break;
-        } //end of while
+        } //end of while (Start)
 
         return thisTryCnt;
     }
 
     protected boolean validateInput(String input) {
-        if (gNum.equals(input)) {
-            flag = true;
-        } else {
-            flag = false;
+        boolean validateInputFlag = true;
+        HashSet<Character> validCheckSet = new HashSet<>();
+        for (int i=0; i<inputNum.length(); i++) {
+            if (inputNum.charAt(i) != '0') {
+                validCheckSet.add(inputNum.charAt(i));
+            }
         }
-        return flag;
+        while (true) {
+            try {
+
+                //1. 문자입력불가 : nfe
+                Integer tempInt = Integer.parseInt(input);
+                //2. 3자리 수 & 중복 예외처리
+                Exception e = new Exception();
+                if (validCheckSet.size() != 3) {
+                    throw e;
+                } else {
+                    validateInputFlag =  true;
+                    break;
+                }
+            } catch (NumberFormatException nfe) { //문자 입력 시 catch
+                System.out.println(">>[error]문자는 입력할 수 없습니다.");
+                validateInputFlag = false;
+                break;
+            }  catch (Exception e) {
+//                if (validCheckSet.contains(0)) {
+//                    System.out.println(">>[error] 0은 입력할 수 없습니다.");
+//                }
+                if (validCheckSet.size() != 3) {
+                    System.out.println(">>[error] 잘못된 숫자 형식입니다. 0을 제외한 중복되지 않는 3개의 수를 입력하세요.");
+                }
+                validateInputFlag = false;
+                break;
+            }
+        }
+        return validateInputFlag;
     }
 
     private int countStrike(String input) {
@@ -117,19 +134,11 @@ public class BaseballGame {
 
     private int countBall(String input) {
         int totalBall = 0;
-//        int[] iNums = new int[3];
-//        for (int i = 0; i < input.length(); i++) {
-//            iNums[i] = input.charAt(i);
-//        }
-//        System.out.println("iNums:"+iNums);
         for (int i = 0; i < input.length(); i++) {
             for (int j = 0; j < gNum.length(); j++) {
                 if ((i!=j)&&(input.charAt(i)==gNum.charAt(j))) {
                     totalBall++;
                 }
-//                System.out.println(input.charAt(i));
-//                System.out.println(gNum.charAt(j));
-//                System.out.println("i:"+i+" j:"+j+" 볼카운트:"+totalBall);
             }
         }
         return totalBall;
@@ -140,28 +149,33 @@ public class BaseballGame {
         for (int i = 0; i < tryCnt.size(); i++) {
             System.out.println(">> " + (i+1) + "번째 게임 시도 횟수 : " + tryCnt.get(i));
         }
+        System.out.println();
     }
 
     public static void main(String[] args) { //test~~
-        BaseballGame ex = new BaseballGame();
+
         //test area~~
         // System.out.println("실행?");
-        String gNum = "";
-        for (int g : gNums) {
-            gNum += Integer.toString(g);
-        }
-        System.out.println("정답:"+gNum);
+//        String gNum = "";
+//        for (int g : gNums) {
+//            gNum += Integer.toString(g);
+//        }
+//        System.out.println("정답:"+gNum);
         ////////
 
-
-        int sout =ex.play();
-        System.out.println(sout);
+        //System.out.println(sout);
+        while (flagForNewGame == true) {
+            BaseballGame ex = new BaseballGame();
+            ex.play();
+            gNums.clear();
+        }
     }
 
     public void init() {
         gNums.clear();
         gNum = "";
-        flag = false;
+        //flagForNext = false;
+        //flagForNewGame = true;
         inputNum = "";
     }
 }
